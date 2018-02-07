@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Data.OleDb;
-using System.Data.Objects;
 using ICSharpCode.SharpZipLib.Zip;
 
 namespace BathymetryDbfToSQL
@@ -85,7 +84,6 @@ namespace BathymetryDbfToSQL
 
         private void Excecute(bool SaveInDB, bool ShowResInRTB, int NumberOfFile, bool DoLine, bool DoSound, int NumberOfRecordBatchSave)
         {
-            BathymetryEntities be = new BathymetryEntities();
             StringBuilder sb = new StringBuilder();
 
             int DoNumbRows = 100000000;
@@ -137,14 +135,17 @@ namespace BathymetryDbfToSQL
                     chsChart.CHSFileName = f.Name;
                     if (SaveInDB)
                     {
-                        be.AddToCHSCharts(chsChart);
-                        try
+                        using (BathymetryEntities be = new BathymetryEntities())
                         {
-                            be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Error Message [" + ex.Message + "]");
+                            be.CHSCharts.Add(chsChart);
+                            try
+                            {
+                                be.SaveChanges();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error Message [" + ex.Message + "]");
+                            }
                         }
                     }
 
@@ -160,6 +161,8 @@ namespace BathymetryDbfToSQL
                     sb.AppendLine();
 
                     int CurrentRow = 0;
+                    List<CHSDepth> cdListToAdd = new List<CHSDepth>();
+
                     while (pos < ByteArray.Length)
                     {
                         CurrentRow += 1;
@@ -171,6 +174,7 @@ namespace BathymetryDbfToSQL
                         lblStatusTxt.Refresh();
                         Application.DoEvents();
                         CHSDepth cd = new CHSDepth();
+                        cd.CHSChartID = chsChart.CHSChartID;
                         cd.Longitude = double.Parse(ASCIIEncoding.ASCII.GetString(ByteArray, pos, 19));
                         pos += 19;
                         cd.Latitude = double.Parse(ASCIIEncoding.ASCII.GetString(ByteArray, pos, 19));
@@ -192,7 +196,7 @@ namespace BathymetryDbfToSQL
                         if (LatitudeMax < cd.Latitude)
                             LatitudeMax = (double)cd.Latitude;
 
-                        chsChart.CHSDepths.Add(cd);
+                        cdListToAdd.Add(cd);
 
                         // this will save at every NumberOfRecordBatchSave depth
                         if (CurrentRow % NumberOfRecordBatchSave == 0)
@@ -204,7 +208,13 @@ namespace BathymetryDbfToSQL
                             chsChart.LongitudeMin = LongitudeMin;
                             chsChart.LatitudeMax = LatitudeMax;
                             chsChart.LatitudeMin = LatitudeMin;
-                            be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
+                            using (BathymetryEntities be = new BathymetryEntities())
+                            {
+                                be.CHSDepths.AddRange(cdListToAdd);
+                                be.SaveChanges();
+                            }
+
+                            cdListToAdd = new List<CHSDepth>();
                         }
 
                         sb.Append(cd.Longitude + "\t");
@@ -219,8 +229,11 @@ namespace BathymetryDbfToSQL
                     chsChart.LongitudeMin = LongitudeMin;
                     chsChart.LatitudeMax = LatitudeMax;
                     chsChart.LatitudeMin = LatitudeMin;
-                    be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
-
+                    using (BathymetryEntities be = new BathymetryEntities())
+                    {
+                        be.CHSDepths.AddRange(cdListToAdd);
+                        be.SaveChanges();
+                    }
 
                     lblStatusTxt.Text = "Done ...";
                     lblStatusTxt.Refresh();
@@ -266,14 +279,17 @@ namespace BathymetryDbfToSQL
                     chsChart.CHSFileName = f.Name;
                     if (SaveInDB)
                     {
-                        be.AddToCHSCharts(chsChart);
-                        try
+                        using (BathymetryEntities be = new BathymetryEntities())
                         {
-                            be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Error Message [" + ex.Message + "]");
+                            be.CHSCharts.Add(chsChart);
+                            try
+                            {
+                                be.SaveChanges();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error Message [" + ex.Message + "]");
+                            }
                         }
                     }
 
@@ -284,6 +300,7 @@ namespace BathymetryDbfToSQL
                     }
                     sb.AppendLine();
 
+                    List<CHSDepth> cdListToAdd = new List<CHSDepth>();
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         if (i > DoNumbRows)
@@ -293,6 +310,7 @@ namespace BathymetryDbfToSQL
                         lblStatusTxt.Refresh();
                         Application.DoEvents();
                         CHSDepth cd = new CHSDepth();
+                        cd.CHSChartID = chsChart.CHSChartID;
                         cd.LineValue = (double)dt.Rows[i].ItemArray[0];
                         cd.Depth = (double)dt.Rows[i].ItemArray[1];
                         cd.Longitude = (double)dt.Rows[i].ItemArray[2];
@@ -310,7 +328,7 @@ namespace BathymetryDbfToSQL
                         if (LatitudeMax < cd.Latitude)
                             LatitudeMax = (double)cd.Latitude;
 
-                        chsChart.CHSDepths.Add(cd);
+                        cdListToAdd.Add(cd);
 
                         // this will save at every NumberOfRecordBatchSave depth
                         if (i % NumberOfRecordBatchSave == 0)
@@ -322,7 +340,13 @@ namespace BathymetryDbfToSQL
                             chsChart.LongitudeMin = LongitudeMin;
                             chsChart.LatitudeMax = LatitudeMax;
                             chsChart.LatitudeMin = LatitudeMin;
-                            be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
+                            using (BathymetryEntities be = new BathymetryEntities())
+                            {
+                                be.CHSDepths.AddRange(cdListToAdd);
+                                be.SaveChanges();
+                            }
+
+                            cdListToAdd = new List<CHSDepth>();
                         }
 
                         sb.Append(cd.LineValue + "\t");
@@ -338,7 +362,11 @@ namespace BathymetryDbfToSQL
                     chsChart.LongitudeMin = LongitudeMin;
                     chsChart.LatitudeMax = LatitudeMax;
                     chsChart.LatitudeMin = LatitudeMin;
-                    be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
+                    using (BathymetryEntities be = new BathymetryEntities())
+                    {
+                        be.CHSDepths.AddRange(cdListToAdd);
+                        be.SaveChanges();
+                    }
 
                     reader.Close();
 
@@ -359,6 +387,7 @@ namespace BathymetryDbfToSQL
                 }
                 sb.AppendLine("Done ... " + f.Name);
             }
+
         }
 
         private bool CHSChartInDB(string ChartName, int TotalRowCount)
@@ -383,10 +412,10 @@ namespace BathymetryDbfToSQL
                     return true;
                 }
 
-                be.CHSCharts.DeleteObject(chsChartExist);
+                be.CHSCharts.Remove(chsChartExist);
                 try
                 {
-                    be.SaveChanges(SaveOptions.AcceptAllChangesAfterSave);
+                    be.SaveChanges();
                 }
                 catch (Exception ex)
                 {
@@ -504,11 +533,13 @@ namespace BathymetryDbfToSQL
 
         private void butCreateLineDepthKMZ_Click(object sender, EventArgs e)
         {
-            BathymetryEntities be = new BathymetryEntities();
-
             richTextBoxResults.Text = "";
 
-            List<CHSChart> chsChartList = chsChartList = (from c in be.CHSCharts where !c.CHSChartName.Contains("SOUND") orderby c.CHSChartName select c).ToList();
+            List<CHSChart> chsChartList = new List<CHSChart>();
+            using (BathymetryEntities be = new BathymetryEntities())
+            {
+                chsChartList = chsChartList = (from c in be.CHSCharts.AsNoTracking() where !c.CHSChartName.Contains("SOUND") orderby c.CHSChartName select c).ToList();
+            }
 
             // creating CHSChart KMZ files
             bool OKStart = false;
@@ -546,10 +577,14 @@ namespace BathymetryDbfToSQL
                 lblCurrentFile2.Refresh();
                 Application.DoEvents();
 
-                List<CHSDepth> chsDepthList = (from d in be.CHSDepths
-                                               where d.CHSChartID == chsChart.CHSChartID
-                                               orderby d.CHSDepthID
-                                               select d).ToList();
+                List<CHSDepth> chsDepthList = new List<CHSDepth>();
+                using (BathymetryEntities be = new BathymetryEntities())
+                {
+                    chsDepthList = (from c in be.CHSDepths.AsNoTracking()
+                                    where c.CHSChartID == chsChart.CHSChartID
+                                    orderby c.CHSDepthID
+                                    select c).ToList();
+                }
 
                 if (chsDepthList.Count == 0)
                 {
@@ -822,21 +857,58 @@ namespace BathymetryDbfToSQL
             Application.DoEvents();
         }
 
-        //private void button1_Click(object sender, EventArgs e)
-        //{
-        //    BathymetryEntities be = new BathymetryEntities();
+        private void button1_Click(object sender, EventArgs e)
+        {
+            List<CHSChart> chsChartList = new List<CHSChart>();
+            using (BathymetryEntities be = new BathymetryEntities())
+            {
+                chsChartList = (from c in be.CHSCharts.AsNoTracking()
+                                where c.LongitudeMin == null
+                                select c).ToList();
+            }
 
-        //    int StepSize = 100000;
-        //    for (int i = 0; i < 26000000; i = i + StepSize)
-        //    {
-        //        int StartNum = i;
-        //        int EndNum = i + StepSize;
-        //        lblStatusTxt.Text = i.ToString();
-        //        lblStatusTxt.Refresh();
-        //        Application.DoEvents();
-        //        be.ExecuteStoreCommand("INSERT INTO CHSDepths SELECT CHSChartID, LineValue, Longitude, Latitude, Depth FROM CHSDepths_old where CHSDepthID > " + StartNum + " and CHSDepthID <= " + EndNum, null);
-        //    }
-        //}
+            richTextBoxResults.AppendText($"{ chsChartList.Count } to do\r\n");
+            foreach (CHSChart chsChart in chsChartList)
+            {
+                List<CHSDepth> chsDepthList = new List<CHSDepth>();
+                using (BathymetryEntities be = new BathymetryEntities())
+                {
+                    richTextBoxResults.AppendText($"Doing { chsChart.CHSChartName } \r\n");
+                    richTextBoxResults.Refresh();
+                    Application.DoEvents();
+
+                    chsDepthList = (from c in be.CHSDepths.AsNoTracking()
+                                    where c.CHSChartID == chsChart.CHSChartID
+                                    select c).ToList();
+
+
+                }
+
+                using (BathymetryEntities be2 = new BathymetryEntities())
+                {
+                    CHSChart chsChartToUpdate = (from c in be2.CHSCharts
+                                                 where c.CHSChartID == chsChart.CHSChartID
+                                                 select c).FirstOrDefault();
+
+                    chsChartToUpdate.LatitudeMin = chsDepthList.Select(c => c.Latitude).Min();
+                    chsChartToUpdate.LatitudeMax = chsDepthList.Select(c => c.Latitude).Max();
+                    chsChartToUpdate.LongitudeMin = chsDepthList.Select(c => c.Longitude).Min();
+                    chsChartToUpdate.LongitudeMax = chsDepthList.Select(c => c.Longitude).Max();
+
+                    try
+                    {
+                        be2.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        int seilfj = 34;
+                    }
+                }
+
+            }
+
+        }
+
     }
 }
 

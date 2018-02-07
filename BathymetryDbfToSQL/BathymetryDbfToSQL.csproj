@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BathymetryDbfToSQL</RootNamespace>
     <AssemblyName>BathymetryDbfToSQL</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -23,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,22 +34,27 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Lib\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
-    <Reference Include="System.Data.Services.Client" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -60,10 +67,26 @@
     <Compile Include="BathymetryDbfToSQL.Designer.cs">
       <DependentUpon>BathymetryDbfToSQL.cs</DependentUpon>
     </Compile>
-    <Compile Include="CHSXYZ.Designer.cs">
+    <Compile Include="BathymetryEDM.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>CHSXYZ.edmx</DependentUpon>
+      <DependentUpon>BathymetryEDM.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="BathymetryEDM.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>BathymetryEDM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="BathymetryEDM.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>BathymetryEDM.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="CHSChart.cs">
+      <DependentUpon>BathymetryEDM.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CHSDepth.cs">
+      <DependentUpon>BathymetryEDM.tt</DependentUpon>
     </Compile>
     <Compile Include="ColorVal.cs" />
     <Compile Include="Program.cs" />
@@ -79,12 +102,19 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
-    <EntityDeploy Include="CHSXYZ.edmx">
+    <None Include="App.Config">
+      <SubType>Designer</SubType>
+    </None>
+    <EntityDeploy Include="BathymetryEDM.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>CHSXYZ.Designer.cs</LastGenOutput>
+      <LastGenOutput>BathymetryEDM.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="App.Config" />
+    <None Include="BathymetryEDM.edmx.diagram">
+      <DependentUpon>BathymetryEDM.edmx</DependentUpon>
+    </None>
+    <None Include="packages.config" />
     <None Include="Properties\DataSources\BathymetryEntities.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -97,8 +127,21 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BathymetryEDM.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>BathymetryEDM.edmx</DependentUpon>
+      <LastGenOutput>BathymetryEDM.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="BathymetryEDM.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>BathymetryEDM.edmx</DependentUpon>
+      <LastGenOutput>BathymetryEDM.cs</LastGenOutput>
+    </Content>
     <Content Include="Lib\ICSharpCode.SharpZipLib.dll" />
     <Content Include="__Instructions.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -860,7 +860,7 @@ namespace BathymetryDbfToSQL
                 sb.AppendLine(@"            	<name>" + chsChart.CHSChartName + "</name>");
                 sb.AppendLine(@"            	<visibility>0</visibility>");
                 sb.AppendLine(@"            	<Link>");
-                sb.AppendLine(@"            	    <href>Y:\" + chsChart.CHSChartName + ".kmz</href>");
+                sb.AppendLine(@"            	    <href>X:\" + chsChart.CHSChartName + ".kmz</href>");
                 sb.AppendLine(@"            	</Link>");
                 sb.AppendLine(@"            </NetworkLink>");
                 sb.AppendLine(@"    	</Folder>");
@@ -871,7 +871,7 @@ namespace BathymetryDbfToSQL
                 sb.AppendLine(@"            	<name>" + chsChart.CHSChartName + "SOUNDG</name>");
                 sb.AppendLine(@"            	<visibility>0</visibility>");
                 sb.AppendLine(@"            	<Link>");
-                sb.AppendLine(@"            	    <href>Y:\" + chsChart.CHSChartName + "SOUNDG.kmz</href>");
+                sb.AppendLine(@"            	    <href>X:\" + chsChart.CHSChartName + "SOUNDG.kmz</href>");
                 sb.AppendLine(@"            	</Link>");
                 sb.AppendLine(@"            </NetworkLink>");
                 sb.AppendLine(@"    	</Folder>");

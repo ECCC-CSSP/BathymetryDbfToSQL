@@ -565,7 +565,7 @@ namespace BathymetryDbfToSQL
                 StringBuilder sb = new StringBuilder();
 
                 FileInfo fi = new FileInfo(textBoxDbfFilesDirPath.Text + @"\KMZ\" + chsChart.CHSChartName + ".kmz");
-                if (fi.Exists)
+                if (fi.Exists && fi.Length > 2000)
                 {
                     continue;
                 }
